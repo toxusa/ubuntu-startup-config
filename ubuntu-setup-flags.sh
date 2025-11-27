@@ -126,6 +126,7 @@ APT_PACKAGES=(
     fastfetch
     ranger
     tldr
+    tealdeer
     postgresql-client
     powertop
     lm-sensors
@@ -840,6 +841,24 @@ if [ $START_STEP -le 6 ] && [ "$SKIP_PACKAGES" = false ]; then
     done
 
     log_success "Snap пакеты установлены"
+
+    # Дополнительно: установка Zen Browser через отдельный скрипт
+    if [ -x "$CONFIG_DIR/zen_browser_install.sh" ]; then
+        if command -v zen >/dev/null 2>&1; then
+            log_info "Zen Browser уже установлен (команда 'zen' найдена в PATH), пропускаем установку."
+        else
+            hashes
+            if [ "$DRY_RUN" = true ]; then
+                log_info "DRY-RUN: bash \"$CONFIG_DIR/zen_browser_install.sh\""
+            else
+                log_info "Дополнительно: установка Zen Browser..."
+                bash "$CONFIG_DIR/zen_browser_install.sh" || \
+                    log_warning "Установка Zen Browser завершилась с ошибкой, продолжаем выполнение основного скрипта."
+            fi
+        fi
+    else
+        log_warning "Скрипт установки Zen Browser (zen_browser_install.sh) не найден в $CONFIG_DIR, пропускаем установку."
+    fi
 fi
 
 ################################################################################
