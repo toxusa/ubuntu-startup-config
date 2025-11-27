@@ -56,6 +56,34 @@ Icon=$icon_path
 Terminal=false
 Categories=Network;WebBrowser;
 StartupWMClass=zen
+
+
+[Desktop Entry]
+Type=Application
+Name=Zen Browser
+Comment=Zen web browser
+Exec=$executable_path %u
+Icon=$icon_path
+Terminal=false
+Categories=Network;WebBrowser;
+StartupWMClass=zen
+Actions=new-window;new-private-window;profilemanager;
+
+[Desktop Action new-window]
+Name=New Window
+Name[ru]=Новое окно
+Exec=$executable_path --new-window %u
+
+[Desktop Action new-private-window]
+Name=New Private Window
+Name[ru]=Новое приватное окно
+Exec=$executable_path --private-window %u
+
+[Desktop Action profilemanager]
+Name=Open Profile Manager
+Name[ru]=Открыть менеджер профилей
+Exec=$executable_path --ProfileManager %u
+
 EOF
 
 chmod +x "$desktop_file"
