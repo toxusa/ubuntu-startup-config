@@ -1015,6 +1015,7 @@ if [ $START_STEP -le 11 ]; then
     log_warning "  - Media Controls: https://extensions.gnome.org/extension/4470/media-controls/"
     log_warning "  - Privacy Menu: https://extensions.gnome.org/extension/4491/privacy-menu/"
     log_warning "  - Top Bar Organizer: https://extensions.gnome.org/extension/4356/top-bar-organizer/"
+    log_warning "  - Quick Lang Switch: https://extensions.gnome.org/extension/4559/quick-lang-switch/"
     log_info "Используйте Firefox/Chrome с расширением GNOME Shell Integration"
 fi
 
