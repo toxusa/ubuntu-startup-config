@@ -91,4 +91,6 @@ chmod +x "$desktop_file"
 echo "==> Installation finished."
 echo "Запуск из терминала:  zen"
 echo "Запуск из GNOME: найдите 'Zen Browser' в меню приложений и закрепите в доке."
+echo "Для удобного переключения раскладки клавиатуры при вводе в адресной строке Zen Browser,"
+echo "установите расширение для Gnome Quick Lang Switch (https://extensions.gnome.org/extension/4559/quick-lang-switch/)"
 
