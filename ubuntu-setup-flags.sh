@@ -144,6 +144,7 @@ APT_PACKAGES=(
     software-properties-common
     stress
     wireshark
+    stow
 )
 
 SNAP_PACKAGES=(
