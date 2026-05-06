@@ -113,6 +113,8 @@ APT_PACKAGES=(
     unzip
     lsd
     zsh
+    bat
+    fd-find
     powerline
     fonts-powerline
     git

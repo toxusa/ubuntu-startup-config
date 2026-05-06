@@ -18,7 +18,7 @@
 - Системные утилиты: `curl`, `git`, `htop`, `btop`, `zip`, `unzip`, `net-tools`
 - Текстовые редакторы: `vim`, `neovim`
 - Shell: `zsh`, `powerline`, `fonts-powerline`
-- Терминальные инструменты: `lsd`, `ranger`, `tldr`, `tree-sitter-cli`, `ripgrep`
+- Терминальные инструменты: `lsd`, `ranger`, `tldr`, `tree-sitter-cli`, `ripgrep`, `bat`, `fd-find`
 - Мониторинг: `powertop`, `lm-sensors`, `psensor`, `nvtop`, `intel-gpu-tools`
 - Медиа: `mpv`, `vlc`
 - Разработка: `python3`, `python3-neovim`, `postgresql-client`
