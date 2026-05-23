@@ -1,0 +1,23 @@
+# Бинарные пакеты
+*.deb
+*.AppImage
+
+# История shell
+.bash_history
+.zsh_history
+
+# Личные данные
+.p10k.zsh
+
+# Временные файлы
+*.tmp
+*.log
+
+# Старые версии скриптов
+*_old.sh
+old_*.sh
+fedora-setup_1*.sh
+ubuntu-setup-flags_*.sh
+
+# Бинарники без расширения
+zellij

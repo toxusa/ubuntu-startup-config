@@ -1,0 +1,14 @@
+#!/bin/bash
+THEME=$1
+CONFIG="$HOME/.config/alacritty/alacritty.toml"
+THEMES_DIR="$HOME/.config/alacritty/themes/themes"
+if [ -f "$THEMES_DIR/$THEME.toml" ]; then
+  sed -i "s|themes/themes/.*\.toml|themes/themes/$THEME.toml|" "$CONFIG"
+  echo "Тема изменена на: $THEME"
+else
+  echo "Тема '$THEME' не найдена."
+  echo "Доступные темы:"
+  ls "$THEMES_DIR" | sed 's/\.toml//'
+  echo "Не забудьте скачать темы отсюда: git clone https://github.com/alacritty/alacritty-theme ~/.config/alacritty/themes"
+fi
+

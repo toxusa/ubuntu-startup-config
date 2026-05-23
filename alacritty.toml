@@ -1,0 +1,136 @@
+
+[env]
+TERM = "xterm-256color"
+
+[window]
+# Прозрачность фона (0.0 = полностью прозрачно, 1.0 = непрозрачно)
+opacity = 0.8
+
+# Размытие фона (работает на KDE Wayland и macOS)
+blur = false
+
+# Отступы внутри окна (в пикселях)
+padding.x = 8
+padding.y = 8
+
+# Динамичные отступы (подстраиваются под размер окна)
+dynamic_padding = true
+
+# Декорации окна (full, none, transparent, buttonless)
+decorations = "full"
+
+# Стартовый режим (Windowed, Maximized, Fullscreen)
+startup_mode = "Windowed"
+
+[scrolling]
+# История скролла (строк)
+history = 10000
+
+# Количество строк за один скролл
+multiplier = 3
+
+[font]
+# Основной шрифт
+normal.family = "MesloLGS NF"
+normal.style = "Regular"
+
+bold.family = "MesloLGS NF"
+bold.style = "Bold"
+
+italic.family = "MesloLGS NF"
+italic.style = "Italic"
+
+# Размер шрифта
+size = 12.0
+
+# [colors]
+# # Цветовая схема (можешь заменить на gruvbox, dracula и т.д.)
+# [colors.primary]
+# background = "#1e1e1e"
+# foreground = "#d4d4d4"
+#
+# [colors.cursor]
+# cursor = "#d4d4d4"
+# text = "#1e1e1e"
+#
+# [colors.normal]
+# black   = "#1e1e1e"
+# red     = "#f48771"
+# green   = "#a9dc76"
+# yellow  = "#ffd866"
+# blue    = "#78dce8"
+# magenta = "#ab9df2"
+# cyan    = "#78dce8"
+# white   = "#fcfcfa"
+#
+# [colors.bright]
+# black   = "#727072"
+# red     = "#f48771"
+# green   = "#a9dc76"
+# yellow  = "#ffd866"
+# blue    = "#78dce8"
+# magenta = "#ab9df2"
+# cyan    = "#78dce8"
+# white   = "#fcfcfa"
+
+[cursor]
+# Стиль курсора (Block, Underline, Beam)
+style.shape = "Block"
+style.blinking = "On"
+
+# Скорость мигания (миллисекунды)
+blink_interval = 750
+
+[mouse]
+# Скрывать курсор мыши при наборе
+hide_when_typing = true
+
+[selection]
+# Сохранять выделение в clipboard автоматически
+save_to_clipboard = true
+
+[terminal.shell]
+# Дефолтный shell (если не указан — берёт $SHELL)
+program = "/bin/zsh"
+args = ["-l"]
+
+[keyboard]
+# Биндинги (примеры ниже)
+
+[[keyboard.bindings]]
+key = "V"
+mods = "Control"
+action = "Paste"
+
+[[keyboard.bindings]]
+key = "C"
+mods = "Control"
+action = "Copy"
+
+[[keyboard.bindings]]
+key = "N"
+mods = "Control|Shift"
+action = "CreateNewWindow"
+
+[[keyboard.bindings]]
+key = "Plus"
+mods = "Control"
+action = "IncreaseFontSize"
+
+[[keyboard.bindings]]
+key = "Minus"
+mods = "Control"
+action = "DecreaseFontSize"
+
+[[keyboard.bindings]]
+key = "Key0"
+mods = "Control"
+action = "ResetFontSize"
+
+[general]
+# ~/.config/alacritty/alacritty.toml
+import = [
+  "~/.config/alacritty/themes/themes/vscode.toml"
+]
+# Живая перезагрузка конфига (без рестарта терминала)
+live_config_reload = true
