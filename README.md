@@ -1,276 +1,313 @@
-# Ubuntu 25.10 Automated Setup Script
+# Автонастройка рабочих систем: Ubuntu 25.10 и Omarchy
 
-Автоматизированный скрипт для полной настройки Ubuntu 25.10 с поддержкой модульной установки, гибкой конфигурации и восстановлением системных параметров.
+Репозиторий содержит скрипты для быстрого развёртывания рабочего окружения, восстановления конфигов из зашифрованной копии и переезда между системами.
 
-## 🎯 Возможности
+| Система | Скрипт | Назначение |
+|---|---|---|
+| Ubuntu 25.10 | `ubuntu-setup-flags.sh` | Установка пакетов, Docker, Kubernetes, Zsh, GNOME и восстановление конфигов |
+| Omarchy (Arch, Hyprland) | `omarchy-bootstrap.sh` | Бэкап с Ubuntu/Fedora/Omarchy, установка, dotfiles, плагины, восстановление |
+| Zen Browser | `zen_browser_install.sh` | Модуль для Ubuntu-скрипта, вызывается автоматически |
 
-- **Полная автоматизация** системного конфигурирования на свежей Ubuntu
-- **Гибкие режимы работы** (подробный, тихий, проверка, обновление-только)
-- **Модульная установка** с возможностью пропускать отдельные компоненты
-- **Восстановление конфигов** из резервной копии через Yandex.Disk
-- **Цветной вывод логов** для удобного отслеживания прогресса
-- **Обработка ошибок** с автоматическими повторами и резервными копиями
-- **16-этапная установка** с возможностью начать с конкретного шага
+## Содержание
 
-## 📦 Устанавливаемые компоненты
+- [Omarchy: backup, restore, bootstrap](#omarchy-backup-restore-bootstrap)
+- [Ubuntu 25.10 Automated Setup](#ubuntu-2510-automated-setup)
+- [Общие правила безопасности](#общие-правила-безопасности)
 
-### APT пакеты
-- Системные утилиты: `curl`, `git`, `htop`, `btop`, `zip`, `unzip`, `net-tools`
-- Текстовые редакторы: `vim`, `neovim`
-- Shell: `zsh`, `powerline`, `fonts-powerline`
-- Терминальные инструменты: `lsd`, `ranger`, `tldr`, `tree-sitter-cli`, `ripgrep`, `bat`, `fd-find`, `tmux`, `zellij`
-- Мониторинг: `powertop`, `lm-sensors`, `psensor`, `nvtop`, `intel-gpu-tools`
-- Медиа: `mpv`, `vlc`
-- Разработка: `python3`, `python3-neovim`, `postgresql-client`
-- DevOps: `docker`, `apache2-utils`
-- Дополнительно: `wireshark`, `stress`, `gnome-tweaks`, `gnome-shell-extensions`
+---
 
-### Snap пакеты
-- `telegram-desktop`
-- `multipass`
-- `musescore`
-- `k9s`
-- модуль `zen_browser_install.sh`, который устанавливает Zen Browser.
+# Omarchy: backup, restore, bootstrap
 
-### Инструменты DevOps
-- **Docker** & Docker Compose с настройкой группы пользователя
-- **Kubernetes**: kubectl v1.30.0, Helm с репозиториями
-- **K9s** - интерактивный CLI для Kubernetes
+`omarchy-bootstrap.sh` — один повторно запускаемый скрипт. Запускай его обычным пользователем, не через `sudo`: он сам вызывает `sudo` там, где это нужно.
 
-### Shell & Терминал
-- **Oh My Zsh** с плагинами и темами
-- **Powerlevel10k** - мощная тема для Zsh
-- **Плагины**: zsh-syntax-highlighting, zsh-autosuggestions
-- **AstroNvim** - готовый конфиг для Neovim
+## Режимы
 
-### Дополнительное ПО
-- **Yandex.Disk** для синхронизации файлов
-- **GNOME расширения** (Places Menu, и возможность установки других)
-- **SSH ключи** - восстановление из резервной копии
-- **Git конфиг** с предустановленными параметрами
-- **Zen Browser** — установка из релизов GitHub с регистрацией .desktop и алиасом `zen`
+```text
+omarchy-bootstrap.sh backup [--backup-root DIR]
+omarchy-bootstrap.sh setup [options]
+omarchy-bootstrap.sh restore --from BACKUP_DIR [--force]
+omarchy-bootstrap.sh all --from BACKUP_DIR [options]
+omarchy-bootstrap.sh calendar-auth
+omarchy-bootstrap.sh verify
+```
 
-## 🚀 Быстрый старт
+| Режим | Что делает |
+|---|---|
+| `backup` | Собирает приватные данные и инвентаризацию на Ubuntu, Fedora или Omarchy; создаёт один GPG-архив и `SHA256SUMS` |
+| `setup` | Ставит пакеты, клонирует dotfiles, применяет Stow, настраивает локаль, hosts, NFS, плагины, Docker, Plymouth |
+| `restore` | Восстанавливает приватные данные из бэкапа, сделанного этим скриптом |
+| `all` | `setup`, затем `restore`, затем запуск служб |
+| `calendar-auth` | Интерактивный OAuth-мастер плагина Google Calendar |
+| `verify` | Проверяет команды, службы, Hyprland, hosts, NFS и ThinkPad-модули |
 
-### Подготовка
+## Опции
 
-1. **Создайте директорию для конфигов** на свежей Ubuntu:
+```text
+--from DIR          каталог одного бэкапа (с private-home.tar.gz.gpg)
+--backup-root DIR   родительский каталог новых бэкапов
+--thinkpad          настройки ThinkPad X1 Carbon Gen 9 (WWAN, Bluetooth, fprintd)
+--with-tlp          дополнительно TLP с порогами заряда 75/80
+--skip-docker       не устанавливать и не настраивать Docker
+--skip-plymouth     не скрывать логотип Omarchy при загрузке
+--skip-mount        записать NFS в fstab, но не монтировать
+--calendar-auth     в конце запустить мастер Google Calendar
+--force             повторно восстановить уже применённый бэкап
+--dry-run           показывать изменяющие команды без выполнения
+```
+
+## Что автоматизировано
+
+- **Dotfiles**: клон `https://github.com/toxusa/dotfiles.git` в `~/.dotfiles`; Stow-пакеты `bash_omarchy`, `starship`, `batcat`, `zellij`, `vpn_omarchy`, `foot`, `hypr_omarchy`.
+- **Пакеты**: Git, GitHub CLI, Stow, `lsd`, `mdcat`, `translate-shell`, `sdcv`, Zellij, Glow, MPV, `yt-dlp`, Docker, Syncthing, kubectl, Helm, k9s, `gws`; из AUR — `yandex-disk`, ble.sh, AmneziaWG, словари.
+- **Локаль**: `LANG=en_US.UTF-8`, `LC_TIME=en_GB.UTF-8` (неделя с понедельника, 24 часа).
+- **Сеть**: управляемый блок Homelab в `/etc/hosts`; NFS `192.168.1.10:/data/nas/files` → `/media/files`.
+- **Плагины Omarchy**: `vbrosseau.alttab` и `tmn73.calendar`; календарь заменяет штатные часы в `~/.config/omarchy/shell.json`.
+- **Google Cloud и Workspace CLI**: `gcloud` в `~/.local/share/google-cloud-sdk`, `gws` из репозитория Arch.
+- **Загрузка**: прозрачный логотип Plymouth и `limine-update`.
+- **Docker**: `docker.socket` и группа `docker`.
+- **ThinkPad X1 Carbon Gen 9**: ModemManager и FCC unlock, WWAN выключен, `AutoEnable=false` для Bluetooth, пакет `fprintd`.
+
+Настройки Foot, Hyprland, Bash/ble.sh, раскладки, Alt+Tab-биндов и VPN-скриптов приходят из dotfiles.
+
+## Что входит в бэкап
+
+SSH, GnuPG, Git, Syncthing, Yandex.Disk, профиль Zen, kube/Helm/k9s, Xray/Hysteria, OAuth-данные и timer календаря, словари, пользовательские шрифты, MPV/Glow/yt-dlp, Obsidian, Documents, `/etc/hosts`, `/etc/fstab`, locale и инвентаризация установленных пакетов.
+
+Системные файлы (NetworkManager, ModemManager, TLP, systemd units) сохраняются отдельным архивом и **не** разворачиваются автоматически: UUID и аппаратные настройки нельзя слепо переносить на другую установку.
+
+## Пошаговый сценарий
+
+**1. Бэкап на старой системе** (Ubuntu, Fedora или Omarchy):
+
+```bash
+chmod +x ./omarchy-bootstrap.sh
+./omarchy-bootstrap.sh backup
+cd ~/Yandex.Disk/system_configs/migration-HOST-YYYYMMDD-HHMMSS
+sha256sum -c SHA256SUMS
+```
+
+GPG запросит пароль для шифрования. Пароль нигде не сохраняется. Не удаляй старую систему, пока бэкап не скопирован на второй носитель.
+
+**2. Репетиция на свежей Omarchy**:
+
+```bash
+./omarchy-bootstrap.sh setup --dry-run
+./omarchy-bootstrap.sh setup --thinkpad --dry-run   # для X1 Carbon Gen 9
+```
+
+**3. Установка и восстановление**:
+
+```bash
+# мини-ПК
+./omarchy-bootstrap.sh all --from /path/to/migration-OLDHOST-YYYYMMDD-HHMMSS
+
+# ThinkPad X1 Carbon Gen 9
+./omarchy-bootstrap.sh all --from /path/to/migration-X1-YYYYMMDD-HHMMSS --thinkpad
+```
+
+**4. Google Calendar** (нужен браузер):
+
+```bash
+./omarchy-bootstrap.sh calendar-auth
+```
+
+Вручную в Google Cloud Console: OAuth consent screen, доступы `calendar.readonly` (и `calendar.events` для записи), **публикация приложения** (в режиме Testing токен живёт 7 дней) и OAuth client типа Desktop app.
+
+**5. Выход из сессии, вход и проверка**:
+
+```bash
+./omarchy-bootstrap.sh verify
+```
+
+Перевход нужен для применения локали и группы `docker`.
+
+## Идемпотентность
+
+- Пакеты ставятся с `pacman --needed`; Stow вызывается с `--restow`.
+- Блоки `/etc/hosts` и `/etc/fstab` управляются скриптом и не дублируются.
+- Существующие плагины не клонируются повторно; `shell.json` правится только при изменении, перед этим создаётся копия `.bak.ДАТА`.
+- Конфликтующие файлы dotfiles перемещаются в `~/.local/state/omarchy-bootstrap/stow-backups/`.
+- Один и тот же бэкап повторно не восстанавливается без `--force`; заменяемые файлы уходят в `pre-restore-*`.
+
+## Ограничения Omarchy
+
+- Плагины Omarchy выполняются как код без песочницы в процессе оболочки; сторонние репозитории проверяй перед включением.
+- Автоматическая установка плагинов надёжнее из запущенной графической сессии.
+- OAuth и enrollment отпечатка (`fprintd-enroll`) остаются интерактивными.
+- PAM для fingerprint, `mem_sleep_default=deep` и сброс WWAN после сна автоматически не применяются: нужна диагностика конкретного устройства.
+- Проверь UUID профиля `Omarchy Cellular` в `~/.local/bin/wwan-toggle` после переустановки.
+- Не переносятся: `dnf`/RPM, GNOME-настройки, Oh My Zsh/Powerlevel10k, история zsh, `rclone`, `tele`.
+
+---
+
+# Ubuntu 25.10 Automated Setup
+
+Автоматизированный скрипт для настройки Ubuntu 25.10 с модульной установкой, гибкой конфигурацией и восстановлением системных параметров.
+
+## Возможности
+
+- Полная автоматизация конфигурирования свежей Ubuntu
+- Режимы: подробный, тихий, проверка, только обновление
+- Пропуск отдельных компонентов
+- Восстановление конфигов из резервной копии через Yandex.Disk
+- Цветной вывод и 16 этапов установки
+
+## Устанавливаемые компоненты
+
+**APT**: `curl`, `git`, `htop`, `btop`, `zip`, `unzip`, `net-tools`, `vim`, `neovim`, `zsh`, `powerline`, `fonts-powerline`, `lsd`, `ranger`, `tldr`, `tree-sitter-cli`, `ripgrep`, `bat`, `fd-find`, `tmux`, `zellij`, `powertop`, `lm-sensors`, `psensor`, `nvtop`, `intel-gpu-tools`, `mpv`, `vlc`, `python3`, `python3-neovim`, `postgresql-client`, `docker`, `apache2-utils`, `wireshark`, `stress`, `gnome-tweaks`, `gnome-shell-extensions`.
+
+**Snap**: `telegram-desktop`, `multipass`, `musescore`, `k9s`.
+
+**DevOps**: Docker и Docker Compose (с группой пользователя), kubectl v1.30.0, Helm с репозиториями, K9s.
+
+**Shell**: Oh My Zsh, Powerlevel10k, `zsh-syntax-highlighting`, `zsh-autosuggestions`, AstroNvim.
+
+**Дополнительно**: Yandex.Disk, расширения GNOME (Places Menu), восстановление SSH-ключей, Git-конфиг, Zen Browser (релизы GitHub, `.desktop`, алиас `zen`; модуль `zen_browser_install.sh`).
+
+## Быстрый старт
+
+1. Создай каталог конфигов:
+
 ```bash
 mkdir -p ~/system_configs
 ```
 
-2. **Скопируйте необходимые файлы** через USB или Yandex.Disk:
-```
+2. Скопируй файлы через USB или Yandex.Disk:
+
+```text
 ~/system_configs/
-├── .bashrc                      # конфиг для bash
-├── .zshrc                       # конфиг для zsh
-├── .p10k.zsh                    # конфиг Powerlevel10k (опционально)
+├── .bashrc
+├── .zshrc
+├── .p10k.zsh                    # опционально
 ├── fonts/                       # шрифты .ttf
-├── ssh_keys_backup.zip          # бэкап SSH ключей
-├── obsidian_1.8.9_amd64.deb    # опциональные DEB пакеты
+├── ssh_keys_backup.zip
+├── obsidian_1.8.9_amd64.deb     # опциональные DEB-пакеты
 ├── Yandex_Music_amd64_5.75.2.deb
 ├── Hiddify-Debian-x64.deb
-└── zen_browser_install.sh       # скрипт установки Zen Browser
+└── zen_browser_install.sh
 ```
 
-3. **Сделайте скрипт исполняемым**:
+3. Сделай скрипт исполняемым и запусти (режим обязателен):
+
 ```bash
 chmod +x ~/system_configs/ubuntu-setup-flags.sh
+./ubuntu-setup-flags.sh -v    # подробный
+./ubuntu-setup-flags.sh -q    # тихий
 ```
 
-### Запуск скрипта
+## Параметры
 
-**Обязательно** используйте один из режимов работы:
+```text
+-v, --verbose              Подробный режим
+-q, --quiet                Тихий режим (ошибки и успех)
+-h, --help                 Справка
 
-```bash
-# Подробный режим (выводит все логи установки)
-./ubuntu-setup-flags.sh -v
-
-# Тихий режим (выводит только ошибки и успехи)
-./ubuntu-setup-flags.sh -q
-```
-
-## 📋 Параметры запуска
-
-### Основные параметры
-```
--v, --verbose              Подробный режим установки
--q, --quiet                Тихий режим установки (только ошибки/успех)
--h, --help                 Показать справку и выход
-```
-
-### Специальные режимы
-```
---dry-run                  Проверочный запуск без установки
+--dry-run                  Проверка без установки
 --only-update              Только обновить систему
 --config-only              Только восстановить конфиги
-```
 
-### Пропуск компонентов
-```
---skip-docker              Пропустить установку Docker
---skip-kubernetes          Пропустить Kubernetes инструменты
+--skip-docker              Пропустить Docker
+--skip-kubernetes          Пропустить Kubernetes-инструменты
 --skip-helm                Пропустить только Helm
 --skip-packages            Пропустить все пакеты (apt/snap/deb)
-```
 
-### Логирование
-```
 -l, --log-file FILE        Сохранять логи в файл
 ```
 
-## 📝 Примеры использования
+## Примеры
 
 ```bash
-# Стандартная тихая установка
 ./ubuntu-setup-flags.sh -q
-
-# Подробная установка с логированием
 ./ubuntu-setup-flags.sh -v -l ~/setup.log
-
-# Только обновление системы
 ./ubuntu-setup-flags.sh -q --only-update
-
-# Восстановление только конфигов
 ./ubuntu-setup-flags.sh -q --config-only
-
-# Проверка перед установкой
 ./ubuntu-setup-flags.sh --dry-run -q
-
-# Установка без Docker
 ./ubuntu-setup-flags.sh -q --skip-docker
-
-# Установка без Kubernetes
-./ubuntu-setup-flags.sh -q --skip-kubernetes
-
-# Комбо: подробная установка без Helm и Docker, с логами
 ./ubuntu-setup-flags.sh -v --skip-docker --skip-helm -l ~/setup.log
 ```
 
-## ⚙️ 16-этапная установка
+## 16 этапов
 
-Скрипт предоставляет интерактивное меню для выбора этапа запуска:
+1. Обновление системы (`apt update/upgrade`, `snap refresh`)
+2. Основные APT-пакеты
+3. Docker
+4. Kubernetes: kubectl, Helm, k9s
+5. Yandex.Disk
+6. Snap-пакеты
+7. Шрифты из `fonts/`
+8. Zsh, Oh My Zsh, Powerlevel10k, плагины
+9. Восстановление `.bashrc`
+10. NeoVim с AstroNvim
+11. Расширения GNOME
+12. DEB-пакеты: Obsidian, Yandex Music, Hiddify
+13. SSH-ключи из `ssh_keys_backup.zip`
+14. Конфигурация Git
+15. Алиасы и функции
+16. Финальные действия и проверки
 
-1. **Обновление системы** - `apt update`, `apt upgrade`, `snap refresh`
-2. **Основные APT пакеты** - терминальные утилиты, редакторы, инструменты
-3. **Docker** - установка и конфигурация группы пользователя
-4. **Kubernetes** - kubectl, Helm, k9s
-5. **Yandex.Disk** - облачная синхронизация
-6. **Snap пакеты** - Telegram, Multipass, MuseScore
-7. **Шрифты** - установка из `fonts/` директории
-8. **Zsh и Oh My Zsh** - Powerlevel10k, плагины
-9. **Восстановление .bashrc** - из резервной копии
-10. **NeoVim с AstroNvim** - IDE для терминала
-11. **GNOME расширения** - Places Menu и другие
-12. **DEB пакеты** - Obsidian, Yandex Music, Hiddify
-13. **SSH ключи** - восстановление из `ssh_keys_backup.zip`
-14. **Конфигурация Git** - пользователь и credHelper
-15. **Алиасы и функции** - полезные команды shell
-16. **Финальные действия** - проверка Docker, настройка Yandex.Disk
+## Резервная копия для Ubuntu-скрипта
 
-## 🔧 Подготовка резервной копии
-
-### Создание бэкапа конфигов
 ```bash
-# 1. Создайте папку на Yandex.Disk
 mkdir -p ~/Yandex.Disk/system_configs/fonts
-
-# 2. Скопируйте конфиги shell
-cp ~/.bashrc ~/Yandex.Disk/system_configs/
-cp ~/.zshrc ~/Yandex.Disk/system_configs/
-cp ~/.p10k.zsh ~/Yandex.Disk/system_configs/  # если есть
-
-# 3. Скопируйте шрифты
+cp ~/.bashrc ~/.zshrc ~/Yandex.Disk/system_configs/
+cp ~/.p10k.zsh ~/Yandex.Disk/system_configs/ 2>/dev/null || true
 cp ~/.local/share/fonts/*.ttf ~/Yandex.Disk/system_configs/fonts/
-
-# 4. Создайте бэкап SSH ключей (зашифрованный архив)
-cd ~/.ssh
-zip -e -r ~/Yandex.Disk/system_configs/ssh_keys_backup.zip ./*
-
-# 5. Переместите DEB пакеты
+cd ~/.ssh && zip -e -r ~/Yandex.Disk/system_configs/ssh_keys_backup.zip ./*
 mv ~/Obsidian_*.deb ~/Yandex.Disk/system_configs/
 mv ~/Yandex_Music_*.deb ~/Yandex.Disk/system_configs/
 mv ~/Downloads/Hiddify-Debian-x64.deb ~/Yandex.Disk/system_configs/
 ```
 
-## 📋 Требования
+Для переезда на Omarchy используй полноценный GPG-бэкап: `./omarchy-bootstrap.sh backup`.
 
-- **ОС**: Ubuntu 25.10 (или совместимая версия)
-- **Пользователь**: обычный пользователь с sudo правами
-- **Интернет**: требуется для загрузки пакетов
-- **Место на диске**: ~20 GB для полной установки
-- **Время**: 30-60 минут в зависимости от скорости интернета
+## Требования и ограничения
 
-## ❌ Ограничения
+- Ubuntu 25.10 или совместимая; обычный пользователь с `sudo`; интернет; около 20 GB; 30–60 минут.
+- Не запускай от root; `-v` и `-q` взаимоисключающие; без режима выводится справка; `--dry-run` только показывает действия.
 
-- **Не запускайте от root** - используйте обычного пользователя
-- **Флаги `-v` и `-q` взаимоисключающие** - укажите только один
-- **Требуется явно указать режим** - без флага получите справку
-- **DRY-RUN не выполняет команды** - только показывает, что будет сделано
+## Ошибки и повторный запуск
 
-## 🐛 Обработка ошибок
+Скрипт пропускает установленные пакеты и выполненные этапы; конфиги копируются в `~/.config_backup_YYYYMMDD_HHMMSS`; ошибки логируются.
 
-- Скрипт автоматически пропускает уже установленные пакеты
-- При повторном запуске пропускаются выполненные этапы
-- Создаются резервные копии конфигов в `~/.config_backup_YYYYMMDD_HHMMSS`
-- Все ошибки логируются с подробным контекстом
+## После установки
 
-## 📌 Важные замечания
-
-1. **После установки требуется перезагрузка**:
-   ```bash
-   sudo reboot
-   ```
-   Это необходимо для применения изменений группы Docker
-
-2. **Powerlevel10k конфигурация**:
-   ```bash
-   p10k configure
-   ```
-
-3. **Yandex.Disk первоначальная настройка**:
-   ```bash
-   yandex-disk setup
-   ```
-
-4. **Docker работа без sudo** (после перезагрузки):
-   ```bash
-   docker run hello-world
-   ```
-
-5. **GNOME расширения** устанавливаются через браузер с расширением "GNOME Shell Integration"
-
-## 📁 Структура проекта
-
-```
-ubuntu-setup-flags.sh
-├── Функции логирования
-├── Парсинг аргументов
-├── 16 этапов установки
-└── Финальная проверка компонентов
-
-zen_browser_install.sh # модульная установка Zen Browser, вызывается из основного скрипта
+```bash
+sudo reboot            # применить группу Docker
+p10k configure         # Powerlevel10k
+yandex-disk setup      # первичная настройка Yandex.Disk
+docker run hello-world # проверка Docker без sudo
 ```
 
-## 🤝 Интеграция с DevOps
+Расширения GNOME ставятся через браузер с «GNOME Shell Integration».
 
-Скрипт полностью интегрирован с современным DevOps стеком:
-- **Containerization**: Docker, Docker Compose
-- **Orchestration**: Kubernetes (kubectl, Helm)
-- **Monitoring**: K9s CLI, GPU tools
-- **Configuration Management**: Git, SSH keys
-- **Infrastructure as Code**: готовность к Ansible, Terraform
+## Структура
 
-## 📞 Поддержка и обновления
+```text
+ubuntu-setup-flags.sh      # основной скрипт Ubuntu
+zen_browser_install.sh     # модуль Zen Browser
+omarchy-bootstrap.sh       # backup/restore/bootstrap для Omarchy
+```
 
-Скрипт автоматически проверяет и обновляет все установленные компоненты при каждом запуске.
+---
 
-## 📜 Лицензия
+# Общие правила безопасности
+
+- Не коммить в Git: `.ssh`, `.gnupg`, токены, профили Syncthing и Yandex.Disk, `~/.zen`, конфиги Xray/WireGuard/AmneziaWG, `*.key`, `*.pem`, OAuth `client_secret.json`.
+- Бэкап с приватными данными храни только зашифрованным (GPG) и проверяй `sha256sum -c SHA256SUMS`.
+- Перед публикацией репозитория:
+
+```bash
+git grep -nEi 'private.?key|api.?key|api.?hash|token|password|endpoint|presharedkey' || true
+git diff --check
+git status --short
+```
+
+## Лицензия
 
 Используйте свободно для личных и коммерческих проектов.
 
 ---
 
 **Автор**: toxusa  
-**Последнее обновление**: 2025-12-13  
-**Версия**: 1.1 (Advanced with Flags)
+**Последнее обновление**: 2026-10-06  
+**Версии**: Ubuntu-скрипт 1.1 (Advanced with Flags), Omarchy bootstrap 2026.10.06

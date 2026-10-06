@@ -21,3 +21,6 @@ ubuntu-setup-flags_*.sh
 
 # Бинарники без расширения
 zellij
+
+# Каталоги migration
+migration*/
